@@ -14,22 +14,35 @@ const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBa
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-// Inside AuthPage.tsx
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate API call validation (or real one later)
-    setTimeout(() => {
-      // SAVE THE ADMIN TOKEN TO LOCAL STORAGE
-      // In a real app, you'd get this from a login API response
-      localStorage.setItem('vanna_auth_token', 'secret-admin-key-123');
-      
+    // For this demo, we assume the "Password" field is the API Key
+    // In production, you would exchange email/pass for a token
+    const apiKey = password; 
+
+    try {
+      const response = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: apiKey }),
+      });
+
+      if (response.ok) {
+        // Cookie is set automatically by the server response
+        onSuccess();
+      } else {
+        setError('Invalid credentials');
+      }
+    } catch (err) {
+      setError('Connection failed');
+    } finally {
       setIsLoading(false);
-      onSuccess();
-    }, 1500);
+    }
   };
 
   return (
