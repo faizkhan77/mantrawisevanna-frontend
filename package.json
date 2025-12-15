@@ -9,11 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^19.2.2",
-    "react": "^19.2.2",
+    "@xyflow/react": "^12.10.0",
+    "dagre": "^0.8.5",
+    "framer-motion": "^12.23.26",
     "lucide-react": "^0.560.0",
-    "recharts": "^3.5.1",
-    "framer-motion": "^12.23.26"
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "recharts": "^3.5.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

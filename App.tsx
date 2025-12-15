@@ -3,6 +3,8 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import { ViewState, ColorPalette } from './types';
+import { checkSession, logoutUser } from './services/api';
+import { Loader2 } from 'lucide-react';
 
 // Color definitions matching Tailwind scales
 const PALETTES: Record<ColorPalette, Record<string, string>> = {
@@ -32,6 +34,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.LANDING);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePalette, setActivePalette] = useState<ColorPalette>('blue');
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Initialize theme class
   useEffect(() => {
@@ -52,7 +55,32 @@ const App: React.FC = () => {
     });
   }, [activePalette]);
 
+  // Check Session on Mount
+  useEffect(() => {
+    const init = async () => {
+      const isAuthenticated = await checkSession();
+      if (isAuthenticated) {
+        setCurrentView(ViewState.DASHBOARD);
+      }
+      setIsInitializing(false);
+    };
+    init();
+  }, []);
+
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    setCurrentView(ViewState.LANDING);
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      </div>
+    );
+  }
 
   const renderView = () => {
     switch (currentView) {
@@ -88,7 +116,7 @@ const App: React.FC = () => {
       case ViewState.DASHBOARD:
         return (
           <Dashboard 
-            onLogout={() => setCurrentView(ViewState.LANDING)} 
+            onLogout={handleLogout} 
             isDarkMode={isDarkMode}
             toggleTheme={toggleTheme}
           />

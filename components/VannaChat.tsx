@@ -30,7 +30,7 @@ const VannaChat: React.FC<VannaChatProps> = ({ theme }) => {
 
   useEffect(() => {
     const loadDependencies = async () => {
-      // 1. Load Plotly (REQUIRED for charts to render)
+      // 1. Load Plotly
       if (!window.Plotly) {
         const plotlyScript = document.createElement('script');
         plotlyScript.src = "https://cdn.plot.ly/plotly-latest.min.js";
@@ -40,57 +40,56 @@ const VannaChat: React.FC<VannaChatProps> = ({ theme }) => {
         await new Promise((resolve) => { plotlyScript.onload = resolve; });
       }
 
-      // 2. Load Vanna Component
+      // 2. Load Vanna
       if (!document.querySelector('script[src="https://img.vanna.ai/vanna-components.js"]')) {
         const vannaScript = document.createElement('script');
         vannaScript.src = "https://img.vanna.ai/vanna-components.js";
         vannaScript.type = "module";
         vannaScript.async = true;
         document.head.appendChild(vannaScript);
-        // We don't necessarily need to wait for this to resolve to set true, 
-        // but it ensures order.
       }
-      
       setScriptsLoaded(true);
     };
-
     loadDependencies();
   }, []);
 
-  // Optional: Debugging listener to ensure artifacts are being received
-  useEffect(() => {
-    const element = chatRef.current;
-    if (element && scriptsLoaded) {
-      const handleArtifact = (event: any) => {
-        // If you see this log but no chart, check the console for Plotly errors
-        console.log('Vanna Artifact Generated:', event.detail); 
-      };
-
-      element.addEventListener('artifact-opened', handleArtifact);
-      return () => element.removeEventListener('artifact-opened', handleArtifact);
-    }
-  }, [scriptsLoaded]);
-
   if (!scriptsLoaded) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-slate-500 animate-pulse">
-        Loading Visualization Engine...
-      </div>
-    );
+    return <div className="w-full h-full flex items-center justify-center text-slate-500 animate-pulse">Loading...</div>;
   }
 
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden rounded-xl bg-slate-900/30 border border-slate-800/50">
       <vanna-chat
         ref={chatRef}
-        api-base="http://localhost:8000"
-        sse-endpoint="http://localhost:8000/api/vanna/v2/chat_sse"
-        ws-endpoint="http://localhost:8000/api/vanna/v2/chat_websocket"
-        poll-endpoint="http://localhost:8000/api/vanna/v2/chat_poll"
+        api-base="" 
+        sse-endpoint="/api/vanna/v2/chat_sse"
+        ws-endpoint="/api/vanna/v2/chat_websocket"
+        poll-endpoint="/api/vanna/v2/chat_poll"
         theme={theme}
         debug="true"
-        className="w-full h-full block" // Added 'block' to ensure it takes space
+        className="w-full h-full block"
       ></vanna-chat>
+      
+      {/* 
+         This style block forces markdown styling inside the shadow DOM if possible, 
+         or at least ensures the container provides correct contrast 
+      */}
+      <style>{`
+        vanna-chat::part(message-content) {
+          font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          line-height: 1.6;
+        }
+        vanna-chat::part(message-content) strong {
+          color: ${theme === 'dark' ? '#38bdf8' : '#0284c7'};
+          font-weight: 700;
+        }
+        vanna-chat::part(message-content) ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+      `}</style>
     </div>
   );
 };

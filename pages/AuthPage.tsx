@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Bot, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { Button, Input, Card } from '../components/UIComponents';
 
@@ -11,7 +11,7 @@ interface AuthPageProps {
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBack }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('admin@mantrawise.com');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,25 +21,23 @@ const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBa
     setIsLoading(true);
     setError('');
 
-    // For this demo, we assume the "Password" field is the API Key
-    // In production, you would exchange email/pass for a token
-    const apiKey = password; 
-
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: apiKey }),
+        body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        // Cookie is set automatically by the server response
         onSuccess();
       } else {
-        setError('Invalid credentials');
+        setError(data.message || 'Invalid credentials');
       }
     } catch (err) {
-      setError('Connection failed');
+      console.error(err);
+      setError('Connection failed. Ensure backend is running.');
     } finally {
       setIsLoading(false);
     }
@@ -78,8 +76,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBa
             </h2>
             <p className="text-slate-400 mt-2">
               {mode === 'LOGIN' 
-                ? 'Enter your credentials to access the SQL Bot' 
-                : 'Get started with AI-powered database analysis'}
+                ? 'Enter your credentials to access the Dashboard' 
+                : 'Contact Admin to create an account'}
             </p>
           </div>
 
@@ -90,7 +88,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBa
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <Input 
                   type="email" 
-                  placeholder="name@company.com" 
+                  placeholder="admin@mantrawise.com" 
                   className="pl-10"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -114,26 +112,22 @@ const AuthPage: React.FC<AuthPageProps> = ({ mode, onSuccess, onSwitchMode, onBa
               </div>
             </div>
 
+            {error && (
+              <div className="text-red-400 text-sm text-center bg-red-900/20 p-2 rounded border border-red-900/50">
+                {error}
+              </div>
+            )}
+
             <Button 
               type="submit" 
               className="w-full rounded-lg mt-6 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400"
               isLoading={isLoading}
             >
-              {mode === 'LOGIN' ? 'Sign In' : 'Create Account'}
+              Sign In
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-400">
-              {mode === 'LOGIN' ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                onClick={() => onSwitchMode(mode === 'LOGIN' ? 'REGISTER' : 'LOGIN')}
-                className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
-              >
-                {mode === 'LOGIN' ? 'Sign up' : 'Log in'}
-              </button>
-            </p>
-          </div>
+          {/* Removed Registration Link since we are Admin Only for now */}
         </Card>
       </motion.div>
     </div>
