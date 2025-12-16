@@ -19,7 +19,7 @@ export interface TableDef {
 }
 
 // Use relative paths (Vite Proxy will forward to localhost:8000)
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+const API_BASE = ''; 
 
 export const checkSession = async (): Promise<boolean> => {
   try {
